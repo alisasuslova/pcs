@@ -16,9 +16,11 @@ public class TodoServer {
         this.todos = todos;
     }
 
-    public void start() {
+    public void start() throws IOException {
         Todos todos = new Todos();
         System.out.println("Сервер стартовал " + port + "...");
+        GsonBuilder builder;
+
 
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             while (true) {
@@ -26,13 +28,14 @@ public class TodoServer {
                 try (Socket clientSocket = serverSocket.accept();
                      PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
                      BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));) {
+
                     System.out.printf("Новый запрос, порт %d%n", clientSocket.getPort());
 
                     while (true) {
                         String line = in.readLine();
-                        GsonBuilder builder = new GsonBuilder();
+                        builder = new GsonBuilder();
                         Gson gson = builder.create();
-                        Task task = gson.fromJson(line, Task.class); //line = in.readLine() - откуда
+                        Task task = gson.fromJson(line, Task.class);
                         System.out.println("Тип: \"" + task.type + "\", Задача: \"" + task.task + "\"");
                         if (task.type == Task.Type.ADD) {
                             todos.addTask(task.task);
@@ -43,6 +46,9 @@ public class TodoServer {
                         }
                     }
                 }
+                catch (Exception e) {
+                    System.out.println(e);
+                }
             }
         }
         catch (Exception e) {
@@ -50,4 +56,3 @@ public class TodoServer {
         }
     }
 }
-
